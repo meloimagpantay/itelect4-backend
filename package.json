@@ -1,0 +1,36 @@
+{
+  "name": "itelect4-backend",
+  "version": "1.0.0",
+  "description": "ITELECT4 Session 10 -- the Session 9 API, deployed and connected",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "seed": "tsx src/seed.ts",
+    "typecheck": "tsc --noEmit",
+    "verify": "tsx verify.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.6.0",
+    "mongoose": "^9.10.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "private": true,
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
