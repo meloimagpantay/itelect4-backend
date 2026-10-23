@@ -68,12 +68,15 @@ export const EXAMPLES: Example[] = [
     },
   },
   {
-    description: "It is a website. It has some pages and it uses a database.",
+    description:
+      "It is a website. It has some pages and it uses a database.",
     review: {
       summary:
         "You describe a website with pages and a database, but not " +
         "what it does.",
-      strengths: ["Pages and a database means the main parts already exist."],
+      strengths: [
+        "Pages and a database means the main parts already exist.",
+      ],
       improvements: [
         "Say in one sentence what the app is for and who uses it.",
         "Name the features someone can try, like logging in.",

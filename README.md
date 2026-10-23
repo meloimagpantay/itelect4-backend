@@ -1,11 +1,60 @@
-# itelect4-backend — end of Session 11
+# itelect4-backend
 
-ITELECT4 Session 11 — the Session 10 API with one more route:
-`POST /api/ai`, which sends a project description to Gemini and returns
-a structured review.
+[![CI](https://github.com/meloimagpantay/itelect4-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/meloimagpantay/itelect4-backend/actions/workflows/ci.yml)
 
-`itelect4-project` is the React frontend built in Sessions 1–8 and
-rewired in Session 10. This is the API it now talks to.
+The REST API behind the ITELECT4 class demo, end of Session 12: Express 5
+in TypeScript, MongoDB Atlas through Mongoose, JWT login, and one route
+that asks Gemini to review a project description.
+
+- **Live API:** https://itelect4-backend-xxxx.vercel.app/api/health
+- **Frontend repo:** https://github.com/meloimagpantay/itelect4-project
+
+## Architecture
+
+```mermaid
+flowchart LR
+  fe["itelect4-project<br/>React + Vite on Vercel"]
+  be["itelect4-backend<br/>Express on Vercel"]
+  db[("MongoDB Atlas")]
+  ai["Gemini API"]
+  fe -- "fetch + Bearer token" --> be
+  be -- "Mongoose" --> db
+  be -- "GEMINI_API_KEY" --> ai
+```
+
+| Route | Who may call it |
+|---|---|
+| `GET /api/health` | Anyone |
+| `POST /api/auth/register`, `POST /api/auth/login` | Anyone |
+| `GET /api/courses`, `GET /api/courses/:code` | Anyone |
+| `GET`, `POST`, `PATCH`, `DELETE /api/submissions...` | A valid Bearer token; each user sees only their own rows |
+| `POST /api/ai` | A valid Bearer token; five a minute per account |
+
+## Tests and CI
+
+```
+npm test      # Vitest + Supertest: 1 file, 3 tests, no database needed
+```
+
+`tests/ai.test.ts` sends real requests to the real app with Supertest:
+no token is a 401, a token signed with another secret is a 401, and a
+valid token gets through to the body check. `src/config/db` is replaced
+for that file, so no database is needed, and the prompt is too short to
+reach Gemini.
+
+`.github/workflows/ci.yml` runs `npm ci`, `npm run typecheck` and
+`npm test` on every push. It needs one repository secret, `JWT_SECRET`
+(Settings > Secrets and variables > Actions); without it the third test
+fails with `secretOrPrivateKey must have a value`.
+
+## What Session 12 changed
+
+| File | Why |
+|---|---|
+| `package.json` | `vitest`, `supertest` and `@types/supertest` in devDependencies; a `test` script. |
+| `tests/ai.test.ts` | **New.** The Supertest file. Outside `src/`, so `npm run build` never compiles it into `dist/`. |
+| `.github/workflows/ci.yml` | **New.** The CI workflow. |
+| `README.md` | The badge, the architecture diagram, the route table and this section. |
 
 ## Run it locally
 
@@ -44,6 +93,7 @@ npm run dev
 | `npm run seed` | Writes the three courses. Safe to run twice. |
 | `npm run try-ai` | One real Gemini request from the terminal, through the same function the route uses. Proves the key, the model name and the schema. |
 | `npm run typecheck` | `tsc --noEmit`. |
+| `npm test` | Vitest + Supertest, once. |
 | `npm run verify` | 144 assertions, offline, with Gemini faked. `--db` uses a real database; `--gemini` sends the AI checks to the real Gemini. |
 
 ## What Session 11 added

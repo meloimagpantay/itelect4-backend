@@ -1,7 +1,7 @@
 {
   "name": "itelect4-backend",
   "version": "1.0.0",
-  "description": "ITELECT4 Session 11 -- the Session 10 API with a Gemini-powered POST /api/ai",
+  "description": "ITELECT4 Session 12 -- the Session 11 API with a Supertest suite and a GitHub Actions workflow",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -10,6 +10,7 @@
     "seed": "tsx src/seed.ts",
     "try-ai": "tsx src/try-ai.ts",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run --reporter=verbose",
     "verify": "tsx verify.ts"
   },
   "dependencies": {
@@ -29,8 +30,11 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.2",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
   },
   "private": true,
   "keywords": [],
