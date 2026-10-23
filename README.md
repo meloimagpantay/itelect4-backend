@@ -1,7 +1,8 @@
-# itelect4-backend — end of Session 10
+# itelect4-backend — end of Session 11
 
-ITELECT4 Session 10 — the Session 9 API with a third resource, deployed
-to Vercel, and locked down to one origin.
+ITELECT4 Session 11 — the Session 10 API with one more route:
+`POST /api/ai`, which sends a project description to Gemini and returns
+a structured review.
 
 `itelect4-project` is the React frontend built in Sessions 1–8 and
 rewired in Session 10. This is the API it now talks to.
@@ -20,6 +21,7 @@ Fill in `.env`:
 | `MONGODB_URI` | Atlas: `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/itelect4` — or local: `mongodb://127.0.0.1:27017/itelect4` |
 | `JWT_SECRET` | Any long random string of your own |
 | `CORS_ORIGIN` | Comma-separated origins allowed to read replies. Locally `http://localhost:5173` |
+| `GEMINI_API_KEY` | From aistudio.google.com → Get API key. Your own; the quota belongs to the Google project behind it |
 | `PORT` | `4000` |
 
 Then:
@@ -40,8 +42,23 @@ npm run dev
 | `npm run build` | `tsc`. This is the command the GT is marked against. |
 | `npm run start` | Plain Node on `dist/server.js`. Needs `build` to have run. |
 | `npm run seed` | Writes the three courses. Safe to run twice. |
+| `npm run try-ai` | One real Gemini request from the terminal, through the same function the route uses. Proves the key, the model name and the schema. |
 | `npm run typecheck` | `tsc --noEmit`. |
-| `npm run verify` | 84 assertions, offline. `npx tsx verify.ts --db` runs the same suite against a real database. |
+| `npm run verify` | 144 assertions, offline, with Gemini faked. `--db` uses a real database; `--gemini` sends the AI checks to the real Gemini. |
+
+## What Session 11 added
+
+| File | Why |
+|---|---|
+| `src/schemas/review.ts` | Two Zod schemas: what a client may send (`prompt`, 20–2000 characters after trimming) and what Gemini must send back. The second one is used three ways — `z.infer` for the `Review` type, `z.toJSONSchema` for the schema sent to Gemini, and `safeParse` to check the reply. |
+| `src/ai/prompt.ts` | The model name, the system prompt, and two few-shot examples typed as `Review`. |
+| `src/ai/gemini.ts` | The client (made on first use, like `connectDB`), the five-turn conversation, and `reviewProject()`, which refuses a reply that is not JSON or does not match the schema. |
+| `src/routes/ai.ts` | `POST /api/ai`: `requireAuth`, a limit of five a minute per account, the request schema, and Gemini's failures turned into 429 or 502 with this API's own sentence. |
+| `src/try-ai.ts` | `npm run try-ai`. |
+
+and changed two: `src/app.ts` mounts the router, and `.env.example` has `GEMINI_API_KEY`.
+
+No temperature is set: Google's guide for the Gemini 3 models recommends leaving it at its default of 1.0.
 
 ## What Session 10 added
 
@@ -67,8 +84,8 @@ There is no `vercel.json` and none is needed. Vercel looks for an
 Express app at `app`, `index` or `server`, at the root or in `src`, and
 `src/app.ts` exports one as its default.
 
-Set three environment variables in the Vercel project — `MONGODB_URI`,
-`JWT_SECRET`, `CORS_ORIGIN` — in **all three** environments, and add
+Set four environment variables in the Vercel project — `MONGODB_URI`,
+`JWT_SECRET`, `CORS_ORIGIN`, `GEMINI_API_KEY` — in **all three** environments, and add
 `0.0.0.0/0` to the Atlas IP access list: Vercel's addresses change per
 request, so the entry from Session 9 matches nothing.
 
@@ -89,11 +106,12 @@ the dashboard does nothing until you redeploy.
 | `POST /api/submissions` | Yes | 201 and the row |
 | `PATCH /api/submissions/:id` | Yes | 200 and the row after the change |
 | `DELETE /api/submissions/:id` | Yes | 204, no body |
+| `POST /api/ai` | Yes | 200 and `{ summary, strengths, improvements, readiness }`; 400, 429 or 502 otherwise |
 
 ## verify.ts
 
-Replays every "Try it" card from the Session 10 console against the
-real app. Offline it runs the real Express app, routes, middleware,
+Replays every "Try it" card from the Session 10 and 11 consoles against
+the real app. Offline it runs the real Express app, routes, middleware,
 schemas and transforms, and serves only the model calls that would
 reach MongoDB from memory.
 
@@ -101,6 +119,10 @@ reach MongoDB from memory.
 `src/app.ts` reads `CORS_ORIGIN` at import time, and an assignment
 among `verify.ts`'s own imports would be hoisted past it.
 
-84 assertions, all passing. `npx tsx verify.ts --db` runs the same
+144 assertions, all passing. Gemini is faked by intercepting `fetch` to
+Google's host, so the checks read exactly what the SDK sends — the five
+turns, the system instruction, the JSON Schema — and replay quota errors,
+bad keys and malformed replies. `npx tsx verify.ts --gemini` sends the AI
+checks to the real Gemini instead (two requests from your quota). `npx tsx verify.ts --db` runs the same
 suite against a real database, which is the only way to check the
 unique index and what MongoDB actually returns.

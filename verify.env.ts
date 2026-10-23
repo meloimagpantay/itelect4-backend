@@ -19,3 +19,8 @@ process.env.JWT_SECRET ||= "verify-only-secret";
 // send.
 process.env.MONGODB_URI ||= "mongodb://127.0.0.1:27017/verify-offline";
 process.env.CORS_ORIGIN ||= "http://localhost:5173";
+
+// Session 11. Offline, Gemini is faked by verify.ts (see fakeGemini),
+// so the key only has to be present. --gemini sends the AI checks to
+// the real Gemini instead, with the key from your own .env.
+process.env.GEMINI_API_KEY ||= "verify-only-key";
