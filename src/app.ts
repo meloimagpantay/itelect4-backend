@@ -74,31 +74,30 @@ app.use((req: Request, res: Response) => {
 // Four parameters, not three. That is the only thing telling Express
 // this function is the error handler -- and it is why `next` has to
 // stay here even though nothing calls it.
-app.use(
-  (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    if (err instanceof mongoose.Error.ValidationError) {
-      res.status(400).json({
-        message: "Validation failed",
-        errors: Object.values(err.errors).map((e) => e.message),
-      });
-      return;
-    }
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof mongoose.Error.ValidationError) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: Object.values(err.errors).map((e) => e.message),
+    });
+    return;
+  }
 
-    // Thrown when a string in the URL is not a valid ObjectId at all.
-    if (err instanceof mongoose.Error.CastError) {
-      res.status(400).json({
-        message: `"${err.value}" is not a valid id`,
-      });
-      return;
-    }
+  // Thrown when a string in the URL is not a valid ObjectId at all.
+  if (err instanceof mongoose.Error.CastError) {
+    res.status(400).json({
+      message: `"${err.value}" is not a valid id`,
+    });
+    return;
+  }
 
-    console.error(err);
-    res.status(500).json({ message: "Something went wrong" });
-  },
-);
+  console.error(err);
+  res.status(500).json({ message: "Something went wrong" });
+});
 
 // Vercel looks for an Express app in six places, and src/app.ts is one
 // of them. What it needs there is a default export -- that is the
 // whole of the deployment configuration for this project, and it is
 // why there is no vercel.json in this repo.
 export default app;
+//
